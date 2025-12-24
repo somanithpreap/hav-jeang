@@ -3,8 +3,8 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../config/db.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey'
-const JWT_EXPIRE = '1d'
+const JWT_SECRET = process.env.JWT_SECRET
+const JWT_EXPIRE = process.env.JWT_EXPIRE
 
 // ================= REGISTER =================
 export const register = async (req, res) => {
