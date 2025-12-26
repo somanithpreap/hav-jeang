@@ -1,16 +1,14 @@
 openapi: 3.0.3
 info:
-  title: HavJeang API
+  title: HavJeang
   version: 1.0.0
-  description: REST API documentation
-
-servers:
-  - url: http://localhost:5000
-
+  description: HavJeang API Documentation
+servers: 
+  - url: http://localhost:5000/api
 paths:
-  /auth/login:
+  /auth/register:
     post:
-      summary: User login
+      summary: Register a new user as (customer or mechanic)
       tags:
         - Auth
       requestBody:
@@ -20,14 +18,65 @@ paths:
             schema:
               type: object
               required:
-                - email
+                - name
+                - phone
                 - password
+                - usertype
               properties:
-                email:
+                name:
                   type: string
+                  example: John Doe
+                phone:
+                  type: string
+                  example: 077382567
                 password:
                   type: string
+                  example: 12345678
+                usertye:
+                  type: string
+                  enum:
+                    - customer
+                    - mechanic
+                  example: mechanic
       responses:
-        "200":
-          description: Login successful
+        '201':
+          description: User Registerd successfully
+        '400' :
+          description: validation error
+
+  /auth/login:
+    post:
+      summary: Login User
+      tags: 
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - password
+              properties:
+                phone:
+                  type: string
+                  example: 077382567
+                password:
+                  type: string
+                  example: 12345678
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Invalid phone or password
 

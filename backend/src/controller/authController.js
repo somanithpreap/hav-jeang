@@ -15,6 +15,17 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' })
     }
 
+    if(password.length < 8){
+      return res.status(400).json({message: "password must be at least 8 characters long"});
+    }
+    const phoneRegex = /^0\d{8,9}$/
+
+    if (!phoneRegex.test(phone)) {
+    return res.status(400).json({
+    message: 'Invalid phone number format'
+    })
+  }
+
     const existingUser = await prisma.user.findUnique({
       where: { phone }
     })
