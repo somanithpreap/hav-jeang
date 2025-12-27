@@ -25,6 +25,41 @@ export const register = async (req, res) => {
     message: 'Invalid phone number format'
     })
   }
+   // For mechanic, require working_hours and opening_hours
+    if (usertype === 'mechanic') {
+      if (!working_hours || !opening_hours) {
+        return res.status(400).json({ message: 'Mechanic must provide working_hours and opening_hours' })
+      }
+    }
+        // 4️⃣ Mechanic hours validation **PUT YOUR CODE HERE**
+    if (usertype === 'mechanic') {
+      if (!working_hours || !opening_hours) {
+        return res.status(400).json({ message: 'Mechanic must provide working_hours and opening_hours' })
+      }
+
+      // Example format: "08:00-17:00"
+      const hourRegex = /^([01]\d|2[0-3]):([0-5]\d)-([01]\d|2[0-3]):([0-5]\d)$/
+
+      if (!hourRegex.test(working_hours)) {
+        return res.status(400).json({ message: 'working_hours must be in HH:MM-HH:MM format (24h)' })
+      }
+
+      if (!hourRegex.test(opening_hours)) {
+        return res.status(400).json({ message: 'opening_hours must be in HH:MM-HH:MM format (24h)' })
+      }
+
+      // Check that start time < end time
+      const [wStart, wEnd] = working_hours.split('-').map(t => t.split(':').map(Number))
+      const [oStart, oEnd] = opening_hours.split('-').map(t => t.split(':').map(Number))
+
+      if (wStart[0] > wEnd[0] || (wStart[0] === wEnd[0] && wStart[1] >= wEnd[1])) {
+        return res.status(400).json({ message: 'working_hours start must be before end' })
+      }
+
+      if (oStart[0] > oEnd[0] || (oStart[0] === oEnd[0] && oStart[1] >= oEnd[1])) {
+        return res.status(400).json({ message: 'opening_hours start must be before end' })
+      }
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { phone }
@@ -41,7 +76,9 @@ export const register = async (req, res) => {
         name,
         phone,
         password: hashedPassword,
-        usertype
+        usertype,
+        working_hours: usertype === 'mechanic' ? working_hours : null,
+        opening_hours: usertype === 'mechanic' ? opening_hours : null
       }
     })
 
@@ -51,7 +88,10 @@ export const register = async (req, res) => {
         id: user.id,
         name: user.name,
         phone: user.phone,
-        usertype: user.usertype
+        usertype: user.usertype,
+        working_hours: user.working_hours,
+        opening_hours: user.opening_hours
+
       }
     })
   } catch (error) {
@@ -83,10 +123,14 @@ export const login = async (req, res) => {
       JWT_SECRET,
       { expiresIn: JWT_EXPIRE }
     )
+    const header = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString());
+    console.log('JWT Algorithm:', header.alg);
+
 
     res.json({
       message: 'Login successful',
       token,
+      algorithm: header.alg, 
       user: {
         id: user.id,
         name: user.name,
