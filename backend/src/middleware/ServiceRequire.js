@@ -11,7 +11,7 @@ export const requireFirstService = async (req, res, next) => {
 
       if (serviceCount === 0) {
         // Allow only the route to create the first service
-        if (req.path === "/services" && req.method === "POST") {
+        if (req.path === "/" && req.method === "POST") {
           return next()
         }
 

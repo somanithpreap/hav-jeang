@@ -9,58 +9,45 @@ export const createServiceRequest = async (req, res) => {
   try {
     const customerId = req.user.id
     const {
-      serviceId,
+      serviceIds,
       description,
       address,
       request_lat,
       request_lan
     } = req.body
 
-    // Validate required fields (description is optional)
     if (
-      !serviceId ||
+      !Array.isArray(serviceIds) ||
+      serviceIds.length === 0 ||
       !address ||
       request_lat === undefined ||
       request_lan === undefined
     ) {
-      return res.status(400).json({
-        message: "Missing required fields"
-      })
+      return res.status(400).json({ message: "Missing required fields" })
     }
 
-    // Check service exists
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId }
-    })
-
-    if (!service) {
-      return res.status(404).json({
-        message: "Service not found"
-      })
-    }
-
-    // Create service request
     const request = await prisma.serviceRequest.create({
       data: {
         customerId,
-        serviceId,
-        description, // optional
+        description,
         address,
         request_lat,
         request_lan,
-        status: "pending"
-      }
+        status: "pending",
+        service: {
+          connect: serviceIds.map(id => ({ id }))
+        }
+      },
+      include: { service: true }
     })
 
-    res.status(201).json({
-      message: "Service request created successfully",
-      request
-    })
+    res.status(201).json(request)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error" })
   }
 }
+
 
 //
 // ============================
@@ -134,6 +121,7 @@ export const cancelServiceRequest = async (req, res) => {
       where: { id: requestId },
       data: { status: "cancelled" }
     })
+    
 
     res.json({
       message: "Service request cancelled successfully",
@@ -154,32 +142,33 @@ export const getIncomingRequests = async (req, res) => {
   try {
     const mechanicId = req.user.id
 
-    const requests = await prisma.serviceRequest.findMany({
-      where: {
-        service: {
-          mechanicId
-        },
-        status: "pending"
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        service: true
-      },
-      orderBy: {
-        request_date: "asc"
+const requests = await prisma.serviceRequest.findMany({
+  where: {
+    service: {
+      some: {
+        mechanicId
       }
-    })
+    },
+    status: "pending"
+  },
+  include: {
+    customer: {
+      select: { id: true, name: true, phone: true }
+    },
+    service: true
+  },
+  orderBy: { request_date: "asc" }
+})
 
-    res.json(requests)
+if (requests.length === 0) {
+  return res.json({ message: "No incoming service requests", data: [] })
+}
+
+res.json(requests)
+
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({ message: "no service requests found" })
   }
 }
 
@@ -203,8 +192,11 @@ export const completeServiceRequest = async (req, res) => {
         message: "Service request not found"
       })
     }
+    const isAllowed = request.service.some(
+      s => s.mechanicId === mechanicId
+    )
 
-    if (request.service.mechanicId !== mechanicId) {
+    if (!isAllowed) {
       return res.status(403).json({
         message: "You are not allowed to update this request"
       })

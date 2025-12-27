@@ -23,7 +23,7 @@ model User {
   working_hours    String?          @db.VarChar(100)
   opening_hours    String?          @db.VarChar(100)
 
-  services         Service[]        // services mechanic provides
+  service         Service[]        // services mechanic provides
   serviceRequests  ServiceRequest[] // requests customer made
 }
 
@@ -56,7 +56,7 @@ model ServiceRequest {
   customerId   Int
   customer     User             @relation(fields: [customerId], references: [id])
 
-  services     Service[]        @relation("ServiceOnRequest") // many-to-many
+  service     Service[]        @relation("ServiceOnRequest") // many-to-many
 
   @@index([customerId])
 }
