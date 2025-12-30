@@ -5,6 +5,73 @@ import { calculateTripAndTotalPrice } from "../service/pricingService.js"
 // CUSTOMER: Create service request
 // ============================
 //
+import { getDistanceKmORS } from "../service/distance/orsDistance.js"
+
+export const getNearbyMechanics = async (req, res) => {
+  try {
+    const { lat, lng } = req.query
+
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "Location required" })
+    }
+
+    const customerLocation = {
+      lat: Number(lat),
+      lng: Number(lng)
+    }
+
+    const mechanics = await prisma.user.findMany({
+      where: {
+        usertype: "mechanic",
+        mechanic_lat: { not: null },
+        mechanic_lng: { not: null }
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        mechanic_lat: true,
+        mechanic_lng: true,
+        service: true
+      }
+    })
+
+    const MAX_DISTANCE_KM = 5
+
+    const mechanicsWithDistance = await Promise.all(
+      mechanics.map(async (m) => {
+        const mechanicLocation = {
+          lat: m.mechanic_lat,
+          lng: m.mechanic_lng
+        }
+
+        try {
+          const distanceKm = await getDistanceKmORS(
+            customerLocation,
+            mechanicLocation
+          )
+
+          return {
+            ...m,
+            distanceKm
+          }
+        } catch (err) {
+          // If ORS fails for one mechanic, we skip them
+          return null
+        }
+      })
+    )
+
+    const nearby = mechanicsWithDistance
+      .filter(m => m && m.distanceKm <= MAX_DISTANCE_KM)
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+
+    res.json(nearby)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
 
 
 export const createServiceRequest = async (req, res) => {
