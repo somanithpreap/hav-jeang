@@ -3,6 +3,7 @@ import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { isCustomer, isMechanic } from "../middleware/rolebase.js";
 import {
+  getNearbyMechanics,
   createServiceRequest,
   getMyRequests,
   cancelServiceRequest,
@@ -24,6 +25,9 @@ serviceRequestRoutes.get("/my", authenticateToken, isCustomer, getMyRequests);
 
 // Customer cancels request
 serviceRequestRoutes.patch("/:id/cancel", authenticateToken, isCustomer, cancelServiceRequest);
+
+// Customer views nearby mechanics
+serviceRequestRoutes.get("/nearby", authenticateToken, isCustomer, getNearbyMechanics);
 
 // =====================
 // MECHANIC ROUTES

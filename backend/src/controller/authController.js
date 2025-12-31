@@ -23,29 +23,6 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" })
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long" })
-    }
-
-    const phoneRegex = /^0\d{8,9}$/
-    if (!phoneRegex.test(phone)) {
-      return res.status(400).json({ message: "Invalid phone number format" })
-    }
-
-    if (usertype === "mechanic") {
-      if (!working_hours || !opening_hours) {
-        return res.status(400).json({
-          message: "Mechanic must provide working_hours and opening_hours"
-        })
-      }
-
-      if (mechanic_lat == null || mechanic_lng == null) {
-        return res.status(400).json({
-          message: "Mechanic must provide location (lat, lng)"
-        })
-      }
-    }
-
     const existingUser = await prisma.user.findUnique({ where: { phone } })
     if (existingUser) {
       return res.status(400).json({ message: "Phone already registered" })
@@ -125,4 +102,12 @@ export const login = async (req, res) => {
     console.error(error)
     res.status(500).json({ message: 'Server error' })
   }
+}
+export const checkSession = async (req, res) => {
+  // If this controller runs, the token is already valid
+  // because authenticateToken middleware passed
+  res.status(200).json({
+    authenticated: true,
+    user: req.user
+  })
 }

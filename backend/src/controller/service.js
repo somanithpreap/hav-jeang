@@ -7,9 +7,9 @@ import { prisma } from "../config/db.js"
 export const createService = async (req, res) => {
   try {
     const mechanicId = req.user.id
-    const { name, price, shopaddress, location_lat, location_lng, serviceType } = req.body
+    const { name, price, serviceType } = req.body
 
-    if (!name || price === undefined || !shopaddress || location_lat === undefined || location_lng === undefined || !serviceType) {
+    if (!name || price === undefined || !serviceType) {
       return res.status(400).json({ message: "Missing required fields" })
     }
 
@@ -17,9 +17,6 @@ export const createService = async (req, res) => {
       data: {
         name,
         price,
-        shopaddress,
-        location_lat,
-        location_lng,
         serviceType,
         mechanicId
       }
@@ -62,7 +59,7 @@ export const updateService = async (req, res) => {
   try {
     const mechanicId = req.user.id
     const serviceId = Number(req.params.id)
-    const { name, price, shopaddress, location_lat, location_lng, serviceType } = req.body
+    const { name, price, serviceType } = req.body
 
     const service = await prisma.service.findUnique({
       where: { id: serviceId }
@@ -78,7 +75,7 @@ export const updateService = async (req, res) => {
 
     const updatedService = await prisma.service.update({
       where: { id: serviceId },
-      data: { name, price, shopaddress, location_lat, location_lng, serviceType }
+      data: { name, price, serviceType }
     })
 
     res.json({
