@@ -11,12 +11,8 @@ export const authenticateToken = (req, res, next) => {
   }
 
   try {
-<<<<<<< HEAD
     
     const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
-=======
-    const decoded = jwt.verify(token, JWT_SECRET);
->>>>>>> 779674098868fce73f0f756da07944cecd5d4721
     req.user = decoded; // { id, usertype }
     next();
   } catch (err) {
