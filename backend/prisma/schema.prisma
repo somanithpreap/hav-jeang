@@ -13,6 +13,7 @@ generator client {
 // =====================
 // Models
 // =====================
+<<<<<<< HEAD
 model User {
   id               Int              @id @default(autoincrement())
   name             String           @db.VarChar(100)
@@ -38,6 +39,34 @@ model Service {
   mechanic     User             @relation(fields: [mechanicId], references: [id])
 
   requests     ServiceRequest[] @relation("ServiceOnRequest") // many-to-many
+=======
+
+model User {
+  id               Int              @id @default(autoincrement())
+  name             String           @db.VarChar(100)
+  phone String @unique @db.VarChar(20)
+  password         String           @db.VarChar(255)
+  created_at       DateTime         @default(now())
+  usertype         UserType
+
+  services         Service[]
+  serviceRequests  ServiceRequest[]
+}
+
+model Service {
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(100)
+  price         Decimal      @db.Decimal(10, 2)
+  shopaddress   String       @db.VarChar(255)
+  location_lat  Float
+  location_lan  Float
+  serviceType   ServiceType
+
+  mechanicId    Int
+  mechanic      User         @relation(fields: [mechanicId], references: [id])
+
+  requests      ServiceRequest[]
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
 
   @@index([mechanicId])
 }
@@ -46,6 +75,7 @@ model ServiceRequest {
   id           Int              @id @default(autoincrement())
   request_date DateTime         @default(now())
   status       RequestStatus
+<<<<<<< HEAD
   description  String?          @db.VarChar(500)
   address      String           @db.VarChar(255)
   request_lat  Float
@@ -62,6 +92,23 @@ model ServiceRequest {
 }
 
 
+=======
+  description  String?           @db.VarChar(500)
+  address      String           @db.VarChar(255)
+  request_lat  Float
+  request_lan  Float
+
+  customerId   Int
+  serviceId    Int
+
+  customer     User             @relation(fields: [customerId], references: [id])
+  service      Service          @relation(fields: [serviceId], references: [id])
+
+  @@index([customerId])
+  @@index([serviceId])
+}
+
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
 // =====================
 // Enums
 // =====================
@@ -70,7 +117,10 @@ enum RequestStatus {
   pending
   completed
   cancelled
+<<<<<<< HEAD
   accepted
+=======
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
 }
 
 enum ServiceType {

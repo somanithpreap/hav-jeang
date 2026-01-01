@@ -7,9 +7,15 @@ import { prisma } from "../config/db.js"
 export const createService = async (req, res) => {
   try {
     const mechanicId = req.user.id
+<<<<<<< HEAD
     const { name, price, serviceType } = req.body
 
     if (!name || price === undefined || !serviceType) {
+=======
+    const { name, price, shopaddress, location_lat, location_lan, serviceType } = req.body
+
+    if (!name || price === undefined || !shopaddress || location_lat === undefined || location_lan === undefined || !serviceType) {
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
       return res.status(400).json({ message: "Missing required fields" })
     }
 
@@ -17,6 +23,12 @@ export const createService = async (req, res) => {
       data: {
         name,
         price,
+<<<<<<< HEAD
+=======
+        shopaddress,
+        location_lat,
+        location_lan,
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
         serviceType,
         mechanicId
       }
@@ -59,7 +71,11 @@ export const updateService = async (req, res) => {
   try {
     const mechanicId = req.user.id
     const serviceId = Number(req.params.id)
+<<<<<<< HEAD
     const { name, price, serviceType } = req.body
+=======
+    const { name, price, shopaddress, location_lat, location_lan, serviceType } = req.body
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
 
     const service = await prisma.service.findUnique({
       where: { id: serviceId }
@@ -75,7 +91,11 @@ export const updateService = async (req, res) => {
 
     const updatedService = await prisma.service.update({
       where: { id: serviceId },
+<<<<<<< HEAD
       data: { name, price, serviceType }
+=======
+      data: { name, price, shopaddress, location_lat, location_lan, serviceType }
+>>>>>>> 779674098868fce73f0f756da07944cecd5d4721
     })
 
     res.json({
