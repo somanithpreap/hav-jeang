@@ -1,4 +1,5 @@
 import { body, validationResult } from 'express-validator'
+import { prisma } from '../config/db.js'
 
 export const validateRegister = [
   // Name
@@ -9,7 +10,15 @@ export const validateRegister = [
   // Phone
   body('phone')
     .notEmpty().withMessage('Phone number is required')
-    .matches(/^0\d{8,9}$/).withMessage('Invalid phone number format'),
+    .matches(/^0\d{8,9}$/).withMessage('Invalid phone number format')
+    .custom(async (value) => {
+      const existingUser = await prisma.user.findUnique({ where: { phone: value } })
+      if (existingUser) {
+        throw new Error("Phone already registered")
+      }
+      return true
+    }),
+
 
   // Password
   body('password')

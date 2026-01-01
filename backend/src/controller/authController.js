@@ -19,15 +19,6 @@ export const register = async (req, res) => {
       mechanic_lng
     } = req.body
 
-    if (!name || !phone || !password || !usertype) {
-      return res.status(400).json({ message: "All fields are required" })
-    }
-
-    const existingUser = await prisma.user.findUnique({ where: { phone } })
-    if (existingUser) {
-      return res.status(400).json({ message: "Phone already registered" })
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
