@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, Phone, Lock, User, Briefcase, Award, Upload, Wrench, UserCircle } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock, User, Briefcase, Award, Upload, Wrench, UserCircle, MapPin, Clock } from 'lucide-react';
 
 /**
  * AuthPage Component
@@ -47,6 +47,9 @@ const AuthPage = () => {
     serviceLocation: '',
     experience: '',
     serviceType: '',
+    location: '',
+    workHourStart: '',
+    workHourEnd: '',
   });
 
   // Clear mechanic-specific fields when switching from mechanic to customer
@@ -59,6 +62,8 @@ const AuthPage = () => {
         serviceLocation: '',
         experience: '',
         serviceType: '',
+        workHourStart: '',
+        workHourEnd: '',
       }));
     }
   }, [role]);
@@ -74,6 +79,9 @@ const AuthPage = () => {
       serviceLocation: '',
       experience: '',
       serviceType: '',
+      location: '',
+      workHourStart: '',
+      workHourEnd: '',
     });
     setError('');
   }, [mode]);
@@ -96,11 +104,25 @@ const AuthPage = () => {
         return;
       }
 
+      // Validate required fields
+      if (!formData.location) {
+        setError('Please select your location');
+        return;
+      }
+
       // Validate mechanic-specific fields
       if (role === 'mechanic') {
         if (!formData.fullName || !formData.workshopName || !formData.serviceLocation || 
             !formData.experience || !formData.serviceType) {
           setError('Please fill in all required fields');
+          return;
+        }
+        if (!formData.workHourStart || !formData.workHourEnd) {
+          setError('Please select your work hours');
+          return;
+        }
+        if (formData.workHourStart >= formData.workHourEnd) {
+          setError('End time must be after start time');
           return;
         }
       }
@@ -119,12 +141,15 @@ const AuthPage = () => {
         phone: formData.phone,
         password: formData.password, // In production, this should be hashed
         role: role, // Store role permanently
+        location: formData.location,
         ...(role === 'mechanic' && {
           fullName: formData.fullName,
           workshopName: formData.workshopName,
           serviceLocation: formData.serviceLocation,
           experience: formData.experience,
           serviceType: formData.serviceType,
+          workHourStart: formData.workHourStart,
+          workHourEnd: formData.workHourEnd,
         }),
         createdAt: new Date().toISOString(),
       };
@@ -430,6 +455,37 @@ const AuthPage = () => {
               </div>
             )}
 
+            {/* Location - Sign Up Only */}
+            {mode === 'signup' && (
+              <div>
+                <label className="block text-sm font-semibold text-text-primary mb-2">
+                  Location
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary z-10" />
+                  <select
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="">Select your location</option>
+                    <option value="Phnom Penh">Phnom Penh</option>
+                    <option value="Siem Reap">Siem Reap</option>
+                    <option value="Battambang">Battambang</option>
+                    <option value="Sihanoukville">Sihanoukville</option>
+                    <option value="Kampong Cham">Kampong Cham</option>
+                    <option value="Kampong Thom">Kampong Thom</option>
+                    <option value="Kampot">Kampot</option>
+                    <option value="Kep">Kep</option>
+                    <option value="Takeo">Takeo</option>
+                    <option value="Prey Veng">Prey Veng</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
             {/* Workshop/Garage Name - Mechanic Sign Up Only */}
             {mode === 'signup' && role === 'mechanic' && (
               <div>
@@ -516,6 +572,52 @@ const AuthPage = () => {
                   <option value="transmission">Transmission</option>
                   <option value="bodywork">Bodywork & Paint</option>
                 </select>
+              </div>
+            )}
+
+            {/* Work Hours - Mechanic Sign Up Only */}
+            {mode === 'signup' && role === 'mechanic' && (
+              <div>
+                <label className="block text-sm font-semibold text-text-primary mb-2">
+                  Work Hours
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative">
+                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary z-10" />
+                    <select
+                      name="workHourStart"
+                      value={formData.workHourStart}
+                      onChange={handleInputChange}
+                      className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none cursor-pointer"
+                      required
+                    >
+                      <option value="">Start Time</option>
+                      <option value="06:00">6:00 AM</option>
+                      <option value="07:00">7:00 AM</option>
+                      <option value="08:00">8:00 AM</option>
+                      <option value="09:00">9:00 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                    </select>
+                  </div>
+                  <div className="relative">
+                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary z-10" />
+                    <select
+                      name="workHourEnd"
+                      value={formData.workHourEnd}
+                      onChange={handleInputChange}
+                      className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none cursor-pointer"
+                      required
+                    >
+                      <option value="">End Time</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                      <option value="17:00">5:00 PM</option>
+                      <option value="18:00">6:00 PM</option>
+                      <option value="19:00">7:00 PM</option>
+                      <option value="20:00">8:00 PM</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             )}
 
